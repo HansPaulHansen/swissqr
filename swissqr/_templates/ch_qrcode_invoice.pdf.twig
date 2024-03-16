@@ -1,0 +1,389 @@
+{# set swissqr vars by HansPaulHansen #}
+{% set ch_qrencode_url = qrencode_url|default('http://127.0.0.1:8001/swissqr') %}
+{% set ch_qrencode_company_country = qrencode_company_country|default('CH') %}
+{% set ch_fontFamily = ch_fontFamily|default("'Helvetica', sans-serif") %}
+
+<!DOCTYPE html>
+<html lang="{{ language }}">
+<head>
+	<meta charset="UTF-8">
+	{% block invoice_styles %}
+		<style type="text/css">
+			@page {
+				margin-top: 45mm;
+				margin-bottom: 30mm;
+			}
+					
+			.ch_zahlteilfeld_header {
+				position: absolute;
+				left: 67mm;
+				top: 199mm;
+				font-size: 10.5pt;
+				font-weight: bold;
+				font-family: {{ ch_fontFamily|raw }} !important;
+			}
+			
+			.ch_empfansscheinfeld_header {
+				position: absolute;
+				left: 5.5mm;
+				top: 199mm;
+				font-size: 10.5pt;
+				font-weight: bold;
+				font-family: {{ ch_fontFamily|raw }} !important;
+			}
+			
+			.ch_qrcode {
+				height: 46mm;
+				width: 46mm;
+				position: absolute;
+				left: 67mm;
+				top: 209mm;
+				z-index: 1;
+			}
+
+			.ch_qrcode_swiss {
+				height: 46mm;
+				width: 46mm;
+				position: absolute;
+				left: 67mm;
+				top: 209mm;
+				z-index: 200;
+			}
+			
+			.ch_cut0 {
+				height: 3mm;
+				position: absolute;
+				left: 5mm;
+				top: 190.6mm;
+			}
+			
+			.ch_cut90 {
+				width: 3mm;
+				position: absolute;
+				left: 60.6mm;
+				top: 195mm;
+			}			
+			
+			.ch_empfansscheinfeld {
+				position: absolute;
+				top: 192mm;
+				left: 62mm;
+				height: 105mm;
+				width: 148mm;
+				border-top: 1pt dotted black;
+			}
+			
+			.ch_zahlteilfeld {
+				position: absolute;
+				top: 192mm;
+				left: 0mm;
+				height: 105mm;
+				width:62mm;
+				border-right: 1pt dotted black;
+				border-top: 1pt dotted black;
+			} 
+			
+			.ch_empfansscheinfeld_kreditor_label {
+				position: absolute;
+				top: 206mm;
+				left: 5.5mm;
+				font-size: 6pt;
+				font-weight: bold;
+				line-height: 7pt !important;
+				font-family: {{ ch_fontFamily|raw }} !important;	
+			}
+			
+			.ch_empfansscheinfeld_kreditor {
+				position: absolute;
+				top: 208.5mm;
+				left: 5.5mm;
+				font-size: 8pt;
+				font-weight: light;
+				line-height: 9.2pt !important;
+				font-family: {{ ch_fontFamily|raw }} !important;
+			} 
+ 
+			.ch_empfansscheinfeld_debitor_label {
+				position: absolute;
+				top: 225mm;
+				left: 5.5mm;
+				font-size: 6pt;
+				font-weight: bold;
+				line-height: 7pt !important;
+				font-family: {{ ch_fontFamily|raw }} !important;	
+			}
+			
+			.ch_empfansscheinfeld_debitor {
+				position: absolute;
+				top: 227.5mm;
+				left: 5.5mm;
+				font-size: 8pt;
+				font-weight: light;
+				line-height: 9.2pt !important;	
+				font-family: {{ ch_fontFamily|raw }} !important;
+			} 
+ 
+			.ch_empfansscheinfeld_waehrung_label {
+				position: absolute;
+				top: 261mm;
+				left: 5.5mm;
+				font-size: 6pt;
+				font-weight: bold;
+				line-height: 7pt !important;
+				font-family: {{ ch_fontFamily|raw }} !important;	
+			}
+			
+			 .ch_empfansscheinfeld_waehrung {
+				position: absolute;
+				top: 264mm;
+				left: 5.5mm;
+				font-size: 8pt;
+				font-weight: light;
+				line-height: 9.2pt !important;
+				font-family: {{ ch_fontFamily|raw }} !important;	
+			}
+			
+			.ch_empfansscheinfeld_betrag_label {
+				position: absolute;
+				top: 261mm;
+				left: 17.2mm;
+				font-size: 6pt;
+				font-weight: bold;
+				line-height: 7pt !important;
+				font-family: {{ ch_fontFamily|raw }} !important;
+			}
+			
+			.ch_empfansscheinfeld_betrag {
+				position: absolute;
+				top: 264mm;
+				left: 17.2mm;
+				font-size: 8pt;
+				font-weight: light;
+				line-height: 9.2pt !important;
+				font-family: {{ ch_fontFamily|raw }} !important;
+			}
+
+			.ch_empfansscheinfeld_info_label {
+				position: absolute;
+				top: 275.5mm;
+				left: 42mm;
+				font-size: 6pt;
+				font-weight: bold;
+				line-height: 7pt !important;
+				font-family: {{ ch_fontFamily|raw }} !important;
+			}
+			
+			.ch_empfansscheinfeld_info {
+				position: absolute;
+				top: 278mm;
+				left: 42mm;
+				font-size: 8pt;
+				font-weight: light;
+				line-height: 9.2pt !important;
+				font-family: {{ ch_fontFamily|raw }} !important;
+			}
+
+			.ch_zahlteilfeld_kreditor_label {
+				position: absolute;
+				top: 199mm;
+				left: 118mm;
+				font-size: 8pt;
+				font-weight: bold;
+				line-height: 9.2pt !important;
+				font-family: {{ ch_fontFamily|raw }} !important;	
+			}
+			
+			.ch_zahlteilfeld_kreditor {
+				position: absolute;
+				top: 202.2mm;
+				left: 118mm;
+				font-size: 10pt;
+				font-weight: light;
+				line-height: 11.5pt !important;
+				font-family: {{ ch_fontFamily|raw }} !important;
+			} 
+			
+			.ch_zahlteilfeld_debitor_label {
+				position: absolute;
+				top: 234mm;
+				left: 118mm;
+				font-size: 8pt;
+				font-weight: bold;
+				line-height: 9.2pt !important;
+				font-family: {{ ch_fontFamily|raw }} !important;
+			}
+			
+			.ch_zahlteilfeld_debitor {
+				position: absolute;
+				top: 237.2mm;
+				left: 118mm;
+				font-size: 10pt;
+				font-weight: light;
+				line-height: 11.5pt !important;
+				font-family: {{ ch_fontFamily|raw }} !important;
+			} 
+
+			.ch_zahlteilfeld_info_label {
+				position: absolute;
+				top: 222.5mm;
+				left: 118mm;
+				font-size: 8pt;
+				font-weight: bold;
+				line-height: 9.2pt !important;
+				font-family: {{ ch_fontFamily|raw }} !important;
+			}
+			
+			.ch_zahlteilfeld_info {
+				position: absolute;
+				top: 225.7mm;
+				left: 118mm;
+				font-size: 10pt;
+				font-weight: light;
+				line-height: 11.5pt !important;
+				font-family: {{ ch_fontFamily|raw }} !important;
+			} 
+
+			.ch_zahlteilfeld_waehrung_label {
+				position: absolute;
+				top: 261mm;
+				left: 67mm;
+				font-size: 8pt;
+				font-weight: bold;
+				line-height: 9.2pt !important;
+				font-family: {{ ch_fontFamily|raw }} !important;
+			}
+			
+			.ch_zahlteilfeld_waehrung {
+				position: absolute;
+				top: 264.5mm;
+				left: 67mm;
+				font-size: 10pt;
+				font-weight: light;
+				line-height: 11.5pt !important;
+				font-family: {{ ch_fontFamily|raw }} !important;
+			}
+
+			.ch_zahlteilfeld_betrag_label {
+				position: absolute;
+				top: 261mm;
+				left: 83mm;
+				font-size: 8pt;
+				font-weight: bold;
+				line-height: 9.2pt !important;
+				font-family: {{ ch_fontFamily|raw }} !important;
+			}
+			
+			.ch_zahlteilfeld_betrag {
+				position: absolute;
+				top: 264.5mm;
+				left: 83mm;
+				font-size: 10pt;
+				font-weight: light;
+				line-height: 11.5pt !important;
+				font-family: {{ ch_fontFamily|raw }} !important;
+			}
+		</style>
+	{% endblock %}
+
+</head>
+<body>
+{% block ch_qrcodefeld %}
+	{% block ch_qrcode_empfangssteil %}
+		<div class="ch_cut0">
+			<img src="{{ch_qrencode_url}}/_pic/cut.png">
+		</div>
+		<div class="ch_cut90">
+			<img src="{{ch_qrencode_url}}/_pic/cut90.png">
+		</div>
+		<div class="ch_empfansscheinfeld">
+		</div>
+		<div class="ch_empfansscheinfeld_header">
+			<strong>Empfangsschein</strong>
+		</div>
+		<div class="ch_empfansscheinfeld_kreditor_label">
+			<strong>Konto / Zahlbar an</strong>
+		</div>
+		<div class="ch_empfansscheinfeld_kreditor">
+			{{ invoice['template.payment_details'] }}<br>
+			{{ invoice['template.company'] }}<br>
+			{{ invoice['template.address']|nl2br  }}
+		</div>
+		<div class="ch_empfansscheinfeld_debitor_label">
+			<strong>Zahlbar durch</strong>
+		</div>
+		<div class="ch_empfansscheinfeld_debitor">
+			{{ invoice['customer.name'] }}<br>
+			{{ invoice['customer.address']|nl2br }}<br>
+			{{ model.customer.country|country_name }}
+		</div>
+		<div class="ch_empfansscheinfeld_waehrung_label">
+			<strong>Währung</strong>
+		</div>
+		<div class="ch_empfansscheinfeld_waehrung">
+			{{ invoice['invoice.currency'] }}
+		</div>
+		<div class="ch_empfansscheinfeld_betrag_label">
+			<strong>Betrag</strong>
+		</div>
+		<div class="ch_empfansscheinfeld_betrag">
+			{{ invoice['invoice.total_nc'] }}
+		</div>
+		<div class="ch_empfansscheinfeld_info_label">
+			<strong>Annahmestelle</strong>
+		</div>
+	{% endblock %}
+	
+	{% block ch_qrcode_zahlteil %}
+		<div class="ch_zahlteilfeld"></div>
+		<div class="ch_zahlteilfeld_header">
+			<strong>Zahlteil</strong>
+		</div>
+		<div class="ch_qrcode_swiss">
+			<img src="{{ch_qrencode_url}}/_pic/swiss.png">												
+		</div>
+		<div class="ch_qrcode">
+			<img src="{{ch_qrencode_url}}/index.php?rechnung_id={{ invoice['invoice.number'] }}&project_comment={{ invoice['query.project.comment'] }}&paymentDetails={{ invoice['template.payment_details'] }}&company_name={{ invoice['template.company'] }}&company_address={{ invoice['template.address']|nl2br }}&company_country={{ch_qrencode_company_country}}&money_total={{ invoice['invoice.total_plain'] }}&money_currency={{ invoice['invoice.currency'] }}&customer_name={{ invoice['customer.name'] }}&customer_address={{ invoice['customer.address']|nl2br }}&customer_country={{ invoice['customer.country'] }}&project_name={{ invoice['project.name'] }}">
+		</div>
+		<div class="ch_zahlteilfeld_kreditor_label">
+			<strong>Konto / Zahlbar an</strong>
+		</div>
+		<div class="ch_zahlteilfeld_kreditor">
+			{{ invoice['template.payment_details'] }}<br>
+			{{ invoice['template.company'] }}<br>
+			{{ invoice['template.address']|nl2br }}<br>
+			{{ model.company.country|country_name }}
+		</div>
+		<div class="ch_zahlteilfeld_debitor_label">
+			<strong>Zahlbar durch</strong>
+		</div>
+		<div class="ch_zahlteilfeld_debitor">
+			{{ invoice['customer.name'] }}<br>
+			{{ invoice['customer.address']|nl2br }}<br>
+			{{ model.customer.country|country_name }}
+		</div>
+		<div class="ch_zahlteilfeld_info_label">
+			<strong>Zusätzliche Information</strong>
+		</div>
+		<div class="ch_zahlteilfeld_info">
+		{% if invoice['query.project.comment'] is not empty %}	
+			{{ invoice['query.project.comment'] }}
+		{% else %}
+			{{ invoice['project.name'] }}
+		{% endif %} 
+		</div>		
+		<div class="ch_zahlteilfeld_waehrung_label">
+			<strong>Währung</strong>
+		</div>
+		<div class="ch_zahlteilfeld_waehrung">
+			{{ invoice['invoice.currency'] }}
+		</div>
+		<div class="ch_zahlteilfeld_betrag_label">
+			<strong>Betrag</strong>
+		</div>
+		<div class="ch_zahlteilfeld_betrag">
+			{{ invoice['invoice.total_nc'] }}
+		</div>
+	{% endblock %}
+{% endblock %}
+</body>
+</html>

@@ -8,6 +8,7 @@ $QR_RESOLUTION = 600;
 $QR_VERSION = 10;
 $QR_SIZE = 19;
 $QR_MARGIN = 0;
+$QR_ERRCORR = 'M';
 $LINEDELIM = 'br /';
 
 #### ==== VARS ==== ####
@@ -49,6 +50,10 @@ $QRCONTENT = array(
 );
 
 #### ==== FUNCTIONS ==== ####
+
+function validate_str($str) {
+    return !preg_match('/[^A-Za-z0-9.,:\'\+\-\/()?!"#%&*;<>÷=@_$£\[\]{}` ´~àáâäçèéêëìíîïñòóôöùúûüýßÀÁÂÄÇÈÉÊËÌÍÎÏÒÓÔÖÙÚÛÜÑ]/', $str);
+}
 
 function centertxt($msg, $fontfile, $fontsize, $imgx, $imgy) {
 	$centerX = $imgx / 2;
@@ -151,9 +156,8 @@ function jei_bcmod( $x, $y ) {
 function validate_country($country_val) {
 	$country_val = strtolower($country_val);
 	$countries = array('al'=>28,'ad'=>24,'at'=>20,'az'=>28,'bh'=>22,'be'=>16,'ba'=>20,'br'=>29,'bg'=>22,'cr'=>21,'hr'=>21,'cy'=>28,'cz'=>24,'dk'=>18,'do'=>28,'ee'=>20,'fo'=>18,'fi'=>18,'fr'=>27,'ge'=>22,'de'=>22,'gi'=>23,'gr'=>27,'gl'=>18,'gt'=>28,'hu'=>28,'is'=>26,'ie'=>22,'il'=>23,'it'=>27,'jo'=>30,'kz'=>20,'kw'=>30,'lv'=>21,'lb'=>28,'li'=>21,'lt'=>20,'lu'=>20,'mk'=>19,'mt'=>31,'mr'=>27,'mu'=>30,'mc'=>27,'md'=>24,'me'=>22,'nl'=>18,'no'=>15,'pk'=>24,'ps'=>29,'pl'=>28,'pt'=>25,'qa'=>29,'ro'=>24,'sm'=>27,'sa'=>24,'rs'=>22,'sk'=>24,'si'=>19,'es'=>24,'se'=>24,'ch'=>21,'tn'=>24,'tr'=>26,'ae'=>23,'gb'=>22,'vg'=>24);
-	$charcount = count_chars($country_val, 1);
 	
-	if (count($charcount) != 2) {
+	if (strlen($country_val) != 2) {
 		return false;
 	}
 
@@ -309,14 +313,30 @@ if (empty($_REQUEST['project_name']) && empty($_REQUEST['project_comment'])) {
 	err2img($errmsg, 20, 260, 400, 400);
 	exit;
 }
-else {
+else {	
 	if(empty($_REQUEST['project_comment'])) {
-		$project_name = trim($_REQUEST["project_name"]);
-		$Message = substr($project_name, 0, 140);
+		$project_name_raw = trim($_REQUEST["project_name"]);
+		if (!validate_str($project_name_raw)) {
+			$errmsg[0] = "Projektname";
+			$errmsg[1] = "enthält ungültige Zeichen!";
+			err2img($errmsg, 22, 260, 400, 400);
+			exit;		
+		}
+		else {
+			$Message = substr($project_name_raw, 0, 140);
+		}
 	}
 	else {
-		$project_comment = trim($_REQUEST["project_comment"]);
-		$Message = substr($project_comment, 0, 140);
+		$project_comment_raw = trim($_REQUEST["project_comment"]);
+		if (!validate_str($project_comment_raw)) {
+			$errmsg[0] = "Projektbeschrieb";
+			$errmsg[1] = "enthält ungültige Zeichen!";
+			err2img($errmsg, 22, 260, 400, 400);
+			exit;		
+		}
+		else {
+			$Message = substr($project_comment_raw, 0, 140);
+		}
 	}
 	$QRCONTENT["Message"] = $Message;
 }
@@ -338,7 +358,7 @@ else {
 		exit;
 	}
 	else {
-		if (!(strpos($Acount_raw, 'ch') === 0)) {
+		if (!(strpos($Acount_raw, 'ch') === 0) && !(strpos($Acount_raw, 'li') === 0) ) {
 			$errmsg[0] = "Keine Schweizer IBAN!";
 			err2img($errmsg, 22, 260, 400, 400);
 			exit;
@@ -358,8 +378,23 @@ if (empty($_REQUEST['company_name'])) {
 	exit;
 }
 else {
-	$CRName  = trim($_REQUEST["company_name"]);
-	$QRCONTENT["CRName"] = $CRName;
+	$CRName_raw  = trim($_REQUEST["company_name"]);
+	if (strlen($CRName_raw) > 70) {
+		$errmsg[0] = "Firmenname (Kreditor)";
+		$errmsg[1] = "ist zu lang (max. 70 Z.)!";
+		err2img($errmsg, 22, 260, 400, 400);
+		exit;		
+	}	
+	if (!validate_str($CRName_raw)) {
+		$errmsg[0] = "Firmenname (Kreditor)";
+		$errmsg[1] = "enthält ungültige Zeichen!";
+		err2img($errmsg, 22, 260, 400, 400);
+		exit;		
+	}
+	else {
+		$CRName = substr($CRName_raw, 0, 70);
+		$QRCONTENT["CRName"] = $CRName;
+	}
 }
 
 if (empty($_REQUEST['company_address'])) {
@@ -369,11 +404,21 @@ if (empty($_REQUEST['company_address'])) {
 	exit;
 }
 else {
-	$CRAddress = trim($_REQUEST["company_address"]);
-	if(!empty($LINEDELIM)) {
-		$CRAddressLines = explode("br /", $CRAddress);
-		$QRCONTENT["CRAddressline1"] = $CRAddressLines[0];
-		$QRCONTENT["CRAddressline2"] = $CRAddressLines[1];
+	$CRAddress_raw = trim($_REQUEST["company_address"]);
+	if (!validate_str($CRAddress_raw)) {
+		$errmsg[0] = "Firmenadresse (Kreditor)";
+		$errmsg[1] = "enthält ungültige Zeichen!";
+		err2img($errmsg, 22, 260, 400, 400);
+		exit;		
+	}
+	else {	
+		if(!empty($LINEDELIM)) {
+			$CRAddressLines = explode("br /", $CRAddress_raw);
+			$CRAddressLine1 = substr($CRAddressLines[0], 0, 70);
+			$CRAddressLine2 = substr($CRAddressLines[1], 0, 70);
+			$QRCONTENT["CRAddressline1"] = $CRAddressLine1;
+			$QRCONTENT["CRAddressline2"] = $CRAddressLine2;
+		}
 	}
 }
 
@@ -436,7 +481,7 @@ else {
 	else {
 		$errmsg[0] = "Rechnungswährung";
 		$errmsg[1] = "nicht korrekt!";
-		$errmsg[2] = "Kein 2-Charakter";
+		$errmsg[2] = "Kein 3-Charakter";
 		$errmsg[3] = "Währungscode";
 		err2img($errmsg, 20, 260, 400, 400);
 	}
@@ -449,8 +494,17 @@ if (empty($_REQUEST['customer_name'])) {
 	exit;
 }
 else {
-	$UDName  = trim($_REQUEST["customer_name"]);
-	$QRCONTENT["UDName"] = $UDName;
+	$UDName_raw = trim($_REQUEST["customer_name"]);
+	if (!validate_str($UDName_raw)) {
+		$errmsg[0] = "Firmenname (Debitor)";
+		$errmsg[1] = "enthält ungültige Zeichen!";
+		err2img($errmsg, 22, 260, 400, 400);
+		exit;		
+	}
+	else {
+		$UDName = substr($UDName_raw, 0, 70);
+		$QRCONTENT["UDName"] = $UDName;
+	}
 }
 
 if (empty($_REQUEST['customer_address'])) {
@@ -460,11 +514,21 @@ if (empty($_REQUEST['customer_address'])) {
 	exit;
 }
 else {
-	$UDAddress  = trim($_REQUEST["customer_address"]);
-	if(!empty($LINEDELIM)) {
-		$UDAddressLines = explode($LINEDELIM, $UDAddress);
-		$QRCONTENT["UDAddressline1"] = $UDAddressLines[0];
-		$QRCONTENT["UDAddressline2"] = $UDAddressLines[1];
+	$UDAddress_raw  = trim($_REQUEST["customer_address"]);
+	if (!validate_str($UDAddress_raw)) {
+		$errmsg[0] = "Firmenadresse (Debitor)";
+		$errmsg[1] = "enthält ungültige Zeichen!";
+		err2img($errmsg, 22, 260, 400, 400);
+		exit;		
+	}
+	else {	
+		if(!empty($LINEDELIM)) {
+			$UDAddressLines = explode($LINEDELIM, $UDAddress_raw);
+			$UDAddressLine1 = substr($UDAddressLines[0], 0, 70);
+			$UDAddressLine2 = substr($UDAddressLines[1], 0, 70);		
+			$QRCONTENT["UDAddressline1"] = $UDAddressLine1;
+			$QRCONTENT["UDAddressline2"] = $UDAddressLine2;
+		}
 	}
 }
 
@@ -490,8 +554,11 @@ else {
 }
 
 $qrcontent_str = rtrim(implode("\n", $QRCONTENT));
-$qrencode = "'".$QRENCODEBIN."' -d $QR_RESOLUTION -v $QR_VERSION -s $QR_SIZE -m $QR_MARGIN -o - '".$qrcontent_str."'";
+$qrencode = "'".$QRENCODEBIN."' -d $QR_RESOLUTION -l $QR_ERRCORR -v $QR_VERSION -s $QR_SIZE -m $QR_MARGIN -o - '".$qrcontent_str."'";
 $qrcode = shell_exec($qrencode);
+
+#print("<pre>".print_r($QRCONTENT,true)."</pre>");
+#exit;
 
 header("Content-Type: image/png");
 echo ($qrcode);

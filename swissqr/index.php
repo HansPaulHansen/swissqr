@@ -3,7 +3,7 @@
 # by HansPaulHansen
 
 #### ==== USER VARS ==== ####
-$QRENCODEBIN = '/usr/bin/qrencode';
+$QRENCODEBIN = trim(shell_exec('which qrencode'));
 $QR_RESOLUTION = 600;
 $QR_VERSION = 10;
 $QR_SIZE = 19;

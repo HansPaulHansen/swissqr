@@ -9,7 +9,7 @@ $QR_VERSION = 10;
 $QR_SIZE = 19;
 $QR_MARGIN = 0;
 $QR_ERRCORR = 'M';
-$LINEDELIM = 'br /';
+$LINEDELIM = '<br />';
 
 #### ==== VARS ==== ####
 
@@ -413,7 +413,7 @@ else {
 	}
 	else {	
 		if(!empty($LINEDELIM)) {
-			$CRAddressLines = explode("br /", $CRAddress_raw);
+			$CRAddressLines = explode($LINEDELIM, $CRAddress_raw);
 			$CRAddressLine1 = substr($CRAddressLines[0], 0, 70);
 			$CRAddressLine2 = substr($CRAddressLines[1], 0, 70);
 			$QRCONTENT["CRAddressline1"] = $CRAddressLine1;
